@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-mediawiki-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing  # Specify if ALB is internet-facing
+    alb.ingress.kubernetes.io/target-type: ip           # Target type IP for HTTP/HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  # ALB listen ports
+spec:
+  rules:
+    - host: mediawiki.example.com  # Replace with your domain
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Release.Name }}-mediawiki-app-service
+              servicePort: 8080
