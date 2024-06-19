@@ -1,0 +1,16 @@
+# Use MySQL 8 as the base image
+FROM mysql:8
+
+# Set environment variables for database configuration
+ENV MYSQL_DATABASE=mediawiki
+ENV MYSQL_USER=wikiuser
+ENV MYSQL_PASSWORD=secret
+ENV MYSQL_ROOT_PASSWORD=rootpassword
+
+
+# Expose default MySQL port
+EXPOSE 3306
+
+
+# Start MySQL server in the foreground
+CMD ["mysqld"]
