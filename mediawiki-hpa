@@ -1,15 +1,13 @@
-apiVersion: autoscaling/v2
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "mediawiki.fullname" . }}-hpa
-  labels:
-    app: {{ include "mediawiki.name" . }}
-    release: {{ .Release.Name }}
+  name: {{ .Release.Name }}-mediawiki-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "mediawiki.fullname" . }}-deployment
+    name: {{ .Release.Name }}-mediawiki-app-deployment
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
   metrics:
@@ -19,3 +17,4 @@ spec:
       target:
         type: Utilization
         averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}
+{{- end }}
