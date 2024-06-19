@@ -1,1 +1,49 @@
 
+replicaCount: 1
+
+mysql:
+  image:
+    repository: MyACR.azurecr.io/mymysql
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - mysqladmin ping -u root -p$MYSQL_ROOT_PASSWORD
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 5
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - mysqladmin ping -u root -p$MYSQL_ROOT_PASSWORD
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+mysqlVolume:
+  persistentVolume:
+    storageSize: 10Gi
+    pathOnHost: /mnt/data/mysql
+  persistentVolumeClaim:
+    storageSize: 10Gi
+  mountPath: /var/lib/mysql
+
+hpa:
+  enabled: false  # Set to true if you want to enable HPA for MySQL
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
