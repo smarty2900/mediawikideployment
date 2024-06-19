@@ -1,0 +1,41 @@
+# Default values for the MediaWiki Helm chart
+
+replicaCount: 1
+
+mediawikiApp:
+  image:
+    repository: MyACR.azurecr.io/mymediawiki
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  livenessProbe:
+    httpGet:
+      path: /mediawiki/index.php
+      port: 80
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 5
+  readinessProbe:
+    httpGet:
+      path: /mediawiki/index.php
+      port: 80
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+azureKeyVault:
+  name: your-key-vault-name
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
