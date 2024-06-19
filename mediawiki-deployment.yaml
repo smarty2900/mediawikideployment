@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediawiki-app
+spec:
+  replicas: 3  # Adjust based on your scaling needs
+  selector:
+    matchLabels:
+      app: mediawiki
+  template:
+    metadata:
+      labels:
+        app: mediawiki
+    spec:
+      containers:
+        - name: mediawiki
+          image: your-registry/mediawiki:1.41.1  # Replace with your MediaWiki image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: MEDIAWIKI_DB_HOST
+              value: mysql-service  # Replace with your MySQL service name
+            - name: MEDIAWIKI_DB_NAME
+              value: mediawiki
+            - name: MEDIAWIKI_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mediawiki-db-secret
+                  key: username
+            - name: MEDIAWIKI_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mediawiki-db-secret
+                  key: password
