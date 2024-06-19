@@ -1,48 +1,43 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-mediawiki
+  name: {{ .Release.Name }}-mediawiki-app-deployment
 spec:
   replicas: {{ .Values.replicaCount }}
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: mediawiki-app
   template:
     metadata:
       labels:
-        app: mediawiki
+        app: mediawiki-app
     spec:
       containers:
-        - name: mediawiki
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        - name: mediawiki-app-container
+          image: {{ .Values.mediawikiApp.image.repository }}:{{ .Values.mediawikiApp.image.tag }}
+          imagePullPolicy: {{ .Values.mediawikiApp.image.pullPolicy }}
           ports:
             - containerPort: 80
-          env:
-            - name: MEDIAWIKI_DB_HOST
-              value: {{ .Values.db.host }}
-            - name: MEDIAWIKI_DB_NAME
-              value: {{ .Values.db.name }}
-            - name: MEDIAWIKI_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mediawiki-db-secret
-                  key: username
-            - name: MEDIAWIKI_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mediawiki-db-secret
-                  key: password
-          readinessProbe:
-            httpGet:
-              path: /index.php
-              port: 80
-            initialDelaySeconds: 10
-            periodSeconds: 5
+          resources:
+            limits:
+              cpu: {{ .Values.mediawikiApp.resources.limits.cpu }}
+              memory: {{ .Values.mediawikiApp.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.mediawikiApp.resources.requests.cpu }}
+              memory: {{ .Values.mediawikiApp.resources.requests.memory }}
           livenessProbe:
             httpGet:
-              path: /index.php
-              port: 80
-            initialDelaySeconds: 30
-            periodSeconds: 10
+              path: {{ .Values.mediawikiApp.livenessProbe.httpGet.path }}
+              port: {{ .Values.mediawikiApp.livenessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .Values.mediawikiApp.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mediawikiApp.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.mediawikiApp.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.mediawikiApp.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.mediawikiApp.readinessProbe.httpGet.path }}
+              port: {{ .Values.mediawikiApp.readinessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .Values.mediawikiApp.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mediawikiApp.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.mediawikiApp.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.mediawikiApp.readinessProbe.failureThreshold }}
