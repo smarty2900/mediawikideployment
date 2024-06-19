@@ -1,12 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mediawiki-app
+  name: {{ .Release.Name }}-mediawiki
 spec:
-  replicas: 3  # Adjust based on your scaling needs
-  selector:
-    matchLabels:
-      app: mediawiki
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -14,15 +16,14 @@ spec:
     spec:
       containers:
         - name: mediawiki
-          image: your-registry/mediawiki:1.41.1  # Replace with your MediaWiki image
-          imagePullPolicy: Always
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 80
           env:
             - name: MEDIAWIKI_DB_HOST
-              value: mysql-service  # Replace with your MySQL service name
+              value: {{ .Values.db.host }}
             - name: MEDIAWIKI_DB_NAME
-              value: mediawiki
+              value: {{ .Values.db.name }}
             - name: MEDIAWIKI_DB_USER
               valueFrom:
                 secretKeyRef:
@@ -33,3 +34,15 @@ spec:
                 secretKeyRef:
                   name: mediawiki-db-secret
                   key: password
+          readinessProbe:
+            httpGet:
+              path: /index.php
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /index.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
